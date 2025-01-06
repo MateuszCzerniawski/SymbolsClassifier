@@ -1,0 +1,66 @@
+.idea/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.Python
+*.sqlite3
+*.env
+*.venv
+env/
+venv/
+ENV/
+VENV/
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+*.bak
+*.orig
+*.tmp
+# PyCharm specific
+.idea/
+*.iml
+workspace.xml
+# Unit test cache
+tests/__pycache__/
+# Distribution / packaging
+.Python
+develop-eggs/
+eggs/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+# Installer logs
+debug.log
+# Virtual Environment
+env/
+venv/
+ENV/
+VENV/
+*.env
+*.venv
+# Spyder project settings
+.spyderproject
+.spyproject
+# Rope project settings
+.ropeproject
+# mypy
+.mypy_cache/
+.dmypy.json
+# Pyre type checker
+.pyre/
+# profiling data
+.prof

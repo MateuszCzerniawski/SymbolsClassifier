@@ -2,11 +2,13 @@
     [ ] Przygotować mały zbiór danych
     [ ] Rozesłać workflow
     [ ] zebrać duży zbiór danych
-{ } Obrazy
+{X} Obrazy
     [X] Skrypt do ładownia obrazów
-    [ ] Skrypt do przepisywania obrazów na csv
+    [X] Skrypt do przepisywania obrazów na csv
     [X] Skrypt do kompresji obrazów
-    [ ] Skrypt do ładowania obrazów z csv
+    [X] Skrypt do ładowania obrazów z csv
+    [X] Skrypt wyśrodkowujący obrazy
+    [X] Skrypt wykonujący pełną obróbkę danych
 { } Sieci
     [ ] test struktury sieci
     [ ] test hiperparametrów sieci

@@ -50,4 +50,4 @@ def visualise_symbols(parsed_images_dir, symbols_dir, output_path):
     cv2.imwrite(output_path, final_img)
 
 
-visualise_symbols('../data/images/parsed', '../data/images/symbols', f'../graphs/blended.png')
+

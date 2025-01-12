@@ -159,4 +159,3 @@ def process(input_dir, parsed_dir, csv_dir, minimisation_scales):
         dir_to_csv(bilinear, f'{csv_dir}/bilinear{scale}_x', f'{csv_dir}/bilinear{scale}_y')
     return x, y
 
-process('../data/images/raw','../data/images/parsed','../data/in_csv',[2,4])

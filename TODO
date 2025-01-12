@@ -1,5 +1,5 @@
 { } Dane
-    [ ] Przygotować mały zbiór danych
+    [X] Przygotować mały zbiór danych
     [ ] Rozesłać workflow
     [ ] zebrać duży zbiór danych
 {X} Obrazy
@@ -23,7 +23,7 @@
     [ ] test hiperparametrów XGBClassifier
     [ ] unifikacja testów w jeden
 { } Wizualizacja:
-    [ ] wizualizacja idealnych figur
+    [X] wizualizacja idealnych figur
     [ ] wykresy procesu uczenia sieci
     [ ] wykresy grupujące hiperparametry sieci
     [ ] wykresy drzew

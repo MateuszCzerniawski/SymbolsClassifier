@@ -143,9 +143,15 @@ def dir_to_csv(input_dir, output_x, output_y):
     return x, y
 
 
-def load(path):
+def load(path, decompress=False, width=None):
     df = pd.DataFrame(pd.read_csv(path))
     df.reset_index(drop=True, inplace=True)
+    if decompress:
+        tmp = []
+        for i in range(len(df)):
+            row = [int(j) for j in df.iloc[i]]
+            tmp.append(decompress_from_ints(row, width=width))
+        df = pd.DataFrame(tmp)
     return df
 
 
@@ -158,4 +164,3 @@ def process(input_dir, parsed_dir, csv_dir, minimisation_scales):
         dir_to_csv(nearest, f'{csv_dir}/nearest{scale}_x', f'{csv_dir}/nearest{scale}_y')
         dir_to_csv(bilinear, f'{csv_dir}/bilinear{scale}_x', f'{csv_dir}/bilinear{scale}_y')
     return x, y
-

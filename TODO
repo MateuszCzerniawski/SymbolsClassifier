@@ -16,12 +16,12 @@
     [ ] test regularyzacji
     [ ] test dropoutów
     [ ] unifikacja testów w jeden
-{ } Drzewa
-    [ ] test hiperparametrów drzew decyzyjnych
-    [ ] test hiperparametrów ExtraTree
-    [ ] test hiperparametrów RandomForest
-    [ ] test hiperparametrów XGBClassifier
-    [ ] unifikacja testów w jeden
+{X} Drzewa
+    [X] test hiperparametrów drzew decyzyjnych
+    [X] test hiperparametrów ExtraTree
+    [X] test hiperparametrów RandomForest
+    [X] test hiperparametrów XGBClassifier
+    [X] unifikacja testów w jeden
 { } Wizualizacja:
     [X] wizualizacja idealnych figur
     [ ] wykresy procesu uczenia sieci

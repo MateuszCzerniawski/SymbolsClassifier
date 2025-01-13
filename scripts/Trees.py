@@ -1,5 +1,6 @@
 import itertools
 
+import numpy as np
 import pandas as pd
 
 import Util
@@ -31,7 +32,7 @@ model_hiperparameters = {
     'ExtraTreesClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features, bootstrap],
     'RandomForestClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features, bootstrap,
                                oob_score],
-    'XGBClassifier': [criteria, n_estimators, max_depths, learning_rates, subsamples, colsample_bytrees, gammas,
+    'XGBClassifier': [n_estimators, max_depths, learning_rates, subsamples, colsample_bytrees, gammas,
                       min_child_weight, reg]
 }
 
@@ -80,14 +81,14 @@ def use_xgboost(args):
     model = None
     if params is None:
         model = XGBClassifier()
-    elif params[8][0] == 'l1':
-        model = XGBClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
-                              learning_rates=params[3], subsamples=params[4], colsample_bytrees=params[5],
-                              gamma=params[6], min_child_weight=params[7], reg_alpha=params[8][1])
+    elif params[7][0] == 'l1':
+        mmodel = XGBClassifier(n_estimators=params[0], max_depth=params[1],
+                               learning_rate=params[2], subsample=params[3], colsample_bytree=params[4],
+                               gamma=params[5], min_child_weight=params[6], reg_alpha=params[7][1])
     else:
-        model = XGBClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
-                              learning_rates=params[3], subsamples=params[4], colsample_bytrees=params[5],
-                              gamma=params[6], min_child_weight=params[7], reg_lambda=params[8][1])
+        model = XGBClassifier(n_estimators=params[0], max_depth=params[1],
+                              learning_rate=params[2], subsample=params[3], colsample_bytree=params[4],
+                              gamma=params[5], min_child_weight=params[6], reg_lambda=params[7][1])
     return train_test_model(model, data)
 
 
@@ -99,7 +100,7 @@ def conduct_tests(model, data, path=None):
         'RandomForestClassifier': use_random_forest,
         'XGBClassifier': use_xgboost
     }[model]
-    with mp.Pool(processes=14) as pool:
+    with mp.Pool(processes=20) as pool:
         results = [list(i) for i in pool.map(function, params)]
         results = pd.DataFrame(results)
         if path is not None:
@@ -121,7 +122,8 @@ def conduct_all(data):
 if __name__ == "__main__":
     import DataManipulator
 
-    x = DataManipulator.load('../data/in_csv/original_x')
+    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
     y = DataManipulator.load('../data/in_csv/original_y')
+    y = y.values.ravel() if isinstance(y, pd.DataFrame) else np.array(y).ravel()
     data = Util.train_test_from(x, y)
     conduct_all(data)

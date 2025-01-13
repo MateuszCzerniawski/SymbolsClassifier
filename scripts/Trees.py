@@ -51,7 +51,7 @@ def train_test_model(model, data):
 
 
 def use_decision_tree(args):
-    data, params = args
+    data, params = args if len(args)>1 else args, None
     model = DecisionTreeClassifier() if params is None else \
         DecisionTreeClassifier(criterion=params[0], max_depth=params[1], min_samples_split=params[2],
                                min_samples_leaf=params[3], max_features=params[4], max_leaf_nodes=params[5])
@@ -59,7 +59,7 @@ def use_decision_tree(args):
 
 
 def use_extra_tree(args):
-    data, params = args
+    data, params = args if len(args)>1 else args, None
     model = ExtraTreesClassifier() if params is None else \
         ExtraTreesClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                              min_samples_split=params[3], min_samples_leaf=params[4],
@@ -68,7 +68,7 @@ def use_extra_tree(args):
 
 
 def use_random_forest(args):
-    data, params = args
+    data, params = args if len(args)>1 else args, None
     model = RandomForestClassifier() if params is None else \
         RandomForestClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                                min_samples_split=params[3], min_samples_leaf=params[4],
@@ -77,7 +77,7 @@ def use_random_forest(args):
 
 
 def use_xgboost(args):
-    data, params = args
+    data, params = args if len(args)>1 else args, None
     model = None
     if params is None:
         model = XGBClassifier()
@@ -109,21 +109,13 @@ def conduct_tests(model, data, path=None):
 
 
 def conduct_all(data):
+    t = Util.measure_time()
     print('DecisionTreeClassifier')
-    conduct_tests('DecisionTreeClassifier', data, path='../results/DecisionTree_res')
+    conduct_tests('DecisionTreeClassifier', data, path='../results/tmp/DecisionTree_res')
+    print(f'tested {len(combine_params('DecisionTreeClassifier'))} in {Util.format_float(Util.measure_time(t))}')
     print('ExtraTreesClassifier')
     conduct_tests('ExtraTreesClassifier', data, path='../results/ExtraTrees_res')
     print('RandomForestClassifier')
     conduct_tests('RandomForestClassifier', data, path='../results/RandomForest_res')
     print('XGBClassifier')
     conduct_tests('XGBClassifier', data, path='../results/XGB_res')
-
-
-if __name__ == "__main__":
-    import DataManipulator
-
-    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
-    y = DataManipulator.load('../data/in_csv/original_y')
-    y = y.values.ravel() if isinstance(y, pd.DataFrame) else np.array(y).ravel()
-    data = Util.train_test_from(x, y)
-    conduct_all(data)

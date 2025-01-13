@@ -10,12 +10,12 @@
     [X] Skrypt wyśrodkowujący obrazy
     [X] Skrypt wykonujący pełną obróbkę danych
 { } Sieci
-    [ ] test struktury sieci
-    [ ] test hiperparametrów sieci
-    [ ] test kompilacji sieci
-    [ ] test regularyzacji
-    [ ] test dropoutów
-    [ ] unifikacja testów w jeden
+    [X] test struktury sieci
+    [X] test hiperparametrów sieci
+    [X] test kompilacji sieci
+    [X] test regularyzacji
+    [X] test dropoutów
+    [X] unifikacja testów w jeden
 {X} Drzewa
     [X] test hiperparametrów drzew decyzyjnych
     [X] test hiperparametrów ExtraTree

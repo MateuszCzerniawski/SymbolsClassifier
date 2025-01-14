@@ -1,8 +1,10 @@
 import os
 import time
 
+import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 
 
 def save_plot(path):
@@ -26,3 +28,14 @@ def format_percent(number):
 def train_test_from(x, y, fraction=0.3):
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=fraction, random_state=42)
     return x_train, y_train, x_test, y_test
+
+
+def use_pca(train, test, dims, reverse=False):
+    pca = PCA(n_components=dims)
+    train = pca.fit_transform(train)
+    variance = np.sum(pca.explained_variance_ratio_)
+    test = pca.transform(test)
+    if reverse:
+        x_train = pca.inverse_transform(train)
+        x_test = pca.inverse_transform(test)
+    return train,test,variance

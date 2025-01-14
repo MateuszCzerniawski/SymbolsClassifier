@@ -4,8 +4,9 @@ import re
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
-from scripts import DataManipulator
+from scripts import DataManipulator, Util
 
 
 def visualise_symbols(parsed_images_dir, symbols_dir, output_path):
@@ -50,4 +51,36 @@ def visualise_symbols(parsed_images_dir, symbols_dir, output_path):
     cv2.imwrite(output_path, final_img)
 
 
-
+def visualise_pca_variance(input_dir, output_path):
+    y = DataManipulator.load(f'{input_dir}/original_y')
+    all = dict()
+    for name in os.listdir(input_dir):
+        if 'x' in name:
+            dims, vars = [], []
+            print(name[:-2])
+            x = DataManipulator.load(f'{input_dir}/{name}', decompress=True)
+            x_train, y_train, x_test, y_test = Util.train_test_from(x, y)
+            for i in range(1, 100, 10):
+                train, test, variance = Util.use_pca(x_train, x_test, i)
+                dims.append(i)
+                vars.append(variance)
+            all[name[:-2]] = (dims, vars)
+    plt.close()
+    fig, axes = plt.subplots(3, 1, figsize=(10, 10))
+    colors = ['blue', 'red', 'green', 'orange', 'purple', 'lime', 'black']
+    axes[0].set_title('original')
+    axes[1].set_title('bilinear')
+    axes[2].set_title('nearest')
+    counters=[0,0,0]
+    for name in all.keys():
+        tmp = all[name]
+        index = 1 if 'bilinear' in name else (2 if 'nearest' in name else 0)
+        color=colors[counters[index]] if counters[index]<len(colors) else 'blue'
+        axes[index].plot(tmp[0], tmp[1], label=name,color=color)
+        counters[index]+=1
+        axes[index].set_label(name)
+        print(name)
+    axes[0].legend()
+    axes[1].legend()
+    axes[2].legend()
+    Util.save_plot(output_path)

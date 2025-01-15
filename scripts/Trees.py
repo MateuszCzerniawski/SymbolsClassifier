@@ -11,29 +11,24 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 from xgboost import XGBClassifier
 
+from scripts import DataManipulator
+
 criteria = ['gini', 'entropy', 'log_loss']
 max_depths = [None, 10, 20, 30]
-n_estimators = [25, 50, 100, 125, 150]
+n_estimators = [50, 100, 125, 150]
 min_splits = [2, 5, 10]
-min_leaves = [1, 2, 4, 5]
+min_leaves = [2, 4, 5]
 max_features = ['sqrt', 'log2', None]
-max_leaf_nodes = [None, 10, 20, 50]
-bootstrap = [True, False]
-oob_score = [True, False]
 learning_rates = [0.01, 0.1, 0.3]
-subsamples = [0.6, 0.8, 1.0]
-colsample_bytrees = [0.6, 0.8, 1.0]
 gammas = [0, 1, 5]
 min_child_weight = [1, 5, 10]
-reg = [('l1', 0), ('l1', 0.1), ('l1', 1), ('l2', 1), ('l2', 10), ('l2', 100)]
+reg = [('l1', 0.1), ('l1', 0.5), ('l1', 1), ('l2', 1), ('l2', 10), ('l2', 100)]
 
 model_hiperparameters = {
-    'DecisionTreeClassifier': [criteria, max_depths, min_splits, min_leaves, max_features, max_leaf_nodes],
-    'ExtraTreesClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features, bootstrap],
-    'RandomForestClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features, bootstrap,
-                               oob_score],
-    'XGBClassifier': [n_estimators, max_depths, learning_rates, subsamples, colsample_bytrees, gammas,
-                      min_child_weight, reg]
+    'DecisionTreeClassifier': [criteria, max_depths, min_splits, min_leaves, max_features],
+    'ExtraTreesClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features],
+    'RandomForestClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features],
+    'XGBClassifier': [n_estimators, max_depths, learning_rates, gammas, min_child_weight, reg]
 }
 
 
@@ -51,44 +46,44 @@ def train_test_model(model, data):
 
 
 def use_decision_tree(args):
-    data, params = args if len(args)>1 else args, None
+    data, params = args if len(args) > 1 else args, None
     model = DecisionTreeClassifier() if params is None else \
         DecisionTreeClassifier(criterion=params[0], max_depth=params[1], min_samples_split=params[2],
-                               min_samples_leaf=params[3], max_features=params[4], max_leaf_nodes=params[5])
+                               min_samples_leaf=params[3], max_features=params[4])
     return train_test_model(model, data)
 
 
 def use_extra_tree(args):
-    data, params = args if len(args)>1 else args, None
+    data, params = args if len(args) > 1 else args, None
     model = ExtraTreesClassifier() if params is None else \
         ExtraTreesClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                              min_samples_split=params[3], min_samples_leaf=params[4],
-                             max_features=params[5], bootstrap=params[6])
+                             max_features=params[5])
     return train_test_model(model, data)
 
 
 def use_random_forest(args):
-    data, params = args if len(args)>1 else args, None
+    data, params = args if len(args) > 1 else args, None
     model = RandomForestClassifier() if params is None else \
         RandomForestClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                                min_samples_split=params[3], min_samples_leaf=params[4],
-                               max_features=params[5], bootstrap=params[6], oob_score=params[7])
+                               max_features=params[5])
     return train_test_model(model, data)
 
 
 def use_xgboost(args):
-    data, params = args if len(args)>1 else args, None
+    data, params = args if len(args) > 1 else args, None
     model = None
     if params is None:
         model = XGBClassifier()
-    elif params[7][0] == 'l1':
-        mmodel = XGBClassifier(n_estimators=params[0], max_depth=params[1],
-                               learning_rate=params[2], subsample=params[3], colsample_bytree=params[4],
-                               gamma=params[5], min_child_weight=params[6], reg_alpha=params[7][1])
+    elif params[5][0] == 'l1':
+        model = XGBClassifier(n_estimators=params[0], max_depth=params[1],
+                              learning_rate=params[2], gamma=params[3],
+                              min_child_weight=params[4], reg_alpha=params[5][1])
     else:
         model = XGBClassifier(n_estimators=params[0], max_depth=params[1],
-                              learning_rate=params[2], subsample=params[3], colsample_bytree=params[4],
-                              gamma=params[5], min_child_weight=params[6], reg_lambda=params[7][1])
+                              learning_rate=params[2], gamma=params[3],
+                              min_child_weight=params[4], reg_lambda=params[5][1])
     return train_test_model(model, data)
 
 

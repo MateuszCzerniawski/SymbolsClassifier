@@ -2,6 +2,7 @@ import os
 import time
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
@@ -30,12 +31,16 @@ def train_test_from(x, y, fraction=0.3):
     return x_train, y_train, x_test, y_test
 
 
+def ravel(column):
+    return column.values.ravel() if isinstance(column, pd.DataFrame) else np.array(column).ravel()
+
+
 def use_pca(train, test, dims, reverse=False):
     pca = PCA(n_components=dims)
     train = pca.fit_transform(train)
     variance = np.sum(pca.explained_variance_ratio_)
     test = pca.transform(test)
     if reverse:
-        x_train = pca.inverse_transform(train)
-        x_test = pca.inverse_transform(test)
-    return train,test,variance
+        train = pca.inverse_transform(train)
+        test = pca.inverse_transform(test)
+    return train, test, variance

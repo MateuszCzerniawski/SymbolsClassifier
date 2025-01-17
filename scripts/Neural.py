@@ -1,4 +1,7 @@
 import itertools
+import os
+import warnings
+
 import keras
 import numpy as np
 import pandas as pd
@@ -8,8 +11,11 @@ from tensorflow.keras.optimizers import Adam, RMSprop
 from tensorflow.keras import Sequential
 import tensorflow
 import multiprocessing as mp
-import Util
+from scripts import Util
 from scripts import DataManipulator
+warnings.filterwarnings("ignore")
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 pos_epochs = [20, 50, 100, 150]
 pos_batches = [32, 64, 128]
@@ -122,7 +128,7 @@ def combine_tests():
             is_ok = layers[j - 1] / layers[j] == 2
         if is_ok:
             tmp.append(i)
-    nets=tmp
+    nets = tmp
     params = list(
         itertools.product(pos_epochs, pos_batches, pos_learning_rates, pos_optimizers))
     nets = list(itertools.product(nets, params))
@@ -157,7 +163,6 @@ def use_net(input):
         else:
             output.append(val[0] if len(val) > 0 else 0)
     output.extend([accuracy, loss, mae, Util.measure_time(t)])
-    print('done')
     return tuple(output)
 
 

@@ -52,7 +52,7 @@ def visualise_symbols(parsed_images_dir, symbols_dir, output_path):
 
 
 def visualise_pca_variance(input_dir, output_path):
-    y = DataManipulator.load(f'{input_dir}/original_y')
+    y = DataManipulator.load(f'{input_dir}/y')
     all = dict()
     for name in os.listdir(input_dir):
         if 'x' in name:

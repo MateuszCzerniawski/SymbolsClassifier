@@ -163,4 +163,8 @@ def process(input_dir, parsed_dir, csv_dir, minimisation_scales):
         minimise_all(parsed_dir, scale, nearest_output_dir=nearest, bilinear_output_dir=bilinear)
         dir_to_csv(nearest, f'{csv_dir}/nearest{scale}_x', f'{csv_dir}/nearest{scale}_y')
         dir_to_csv(bilinear, f'{csv_dir}/bilinear{scale}_x', f'{csv_dir}/bilinear{scale}_y')
+    for name in os.listdir(csv_dir):
+        if '_y' in name and ('bilinear' in name or 'nearest' in name):
+            os.remove(f'{csv_dir}/{name}')
+    os.rename(f'{csv_dir}/original_y','y')
     return x, y

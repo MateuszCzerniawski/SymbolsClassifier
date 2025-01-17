@@ -1,5 +1,6 @@
 import itertools
 import os
+import sys
 import warnings
 
 import keras
@@ -13,6 +14,7 @@ import tensorflow
 import multiprocessing as mp
 from scripts import Util
 from scripts import DataManipulator
+
 warnings.filterwarnings("ignore")
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -158,20 +160,58 @@ def use_net(input):
         if not isinstance(val, list):
             output.append(val)
         elif key == 'units':
+            counter = 0
             for i in val:
                 output.append(i)
+                counter += 1
+            while counter < 5:
+                output.append(0)
+                counter += 1
         else:
             output.append(val[0] if len(val) > 0 else 0)
     output.extend([accuracy, loss, mae, Util.measure_time(t)])
     return tuple(output)
 
 
-def conduct_all(data, path=None):
+def conduct_all_multiprocess(data, path=None):
     in_out = [(len(data[0].iloc[0]),), 12]
     tests = [(data, in_out, params) for params in combine_tests()]
+    mp.set_start_method('spawn')
     with mp.Pool(processes=20) as pool:
         results = [i for i in pool.map(use_net, tests)]
         results = pd.DataFrame(results)
+        results.columns = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5',
+                           'reg_val', 'dropout', 'reg', 'epochs', 'batch',
+                           'learning_rate', 'optimiser', 'accuracy', 'loss', 'mae', 'time']
         if path is not None:
             results.to_csv(path)
         return results
+
+
+def conduct_all(data, path=None):
+    in_out = [(len(data[0].iloc[0]),), 12]
+    tests = [(data, in_out, params) for params in combine_tests()]
+    results = []
+    for test in tests:
+        results.append(use_net(test))
+    mp.set_start_method('spawn')
+    results = pd.DataFrame(results)
+    results.columns = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5',
+                       'reg_val', 'dropout', 'reg', 'epochs', 'batch',
+                       'learning_rate', 'optimiser', 'accuracy', 'loss', 'mae', 'time']
+    if path is not None:
+        results.to_csv(path)
+    return results
+
+
+if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
+    sys.argv[1] = "consumed"
+    print('preparing data for nets tests')
+    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
+    y = DataManipulator.load('../data/in_csv/y')
+    y = categorise(y)
+    data = Util.train_test_from(x, y)
+    t = Util.measure_time()
+    print('tests start')
+    conduct_all(data, path='../results/nets')
+    print('tests completed')

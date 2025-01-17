@@ -1,4 +1,5 @@
 import itertools
+import sys
 
 import pandas as pd
 
@@ -45,18 +46,15 @@ def train_test_model(model, data):
 
 
 def use_decision_tree(args):
-    data, params = args if len(args) == 2 else args, None
+    data, params = args if len(args) == 2 else (args, None)
     model = DecisionTreeClassifier() if params is None else \
         DecisionTreeClassifier(criterion=params[0], max_depth=params[1], min_samples_split=params[2],
                                min_samples_leaf=params[3], max_features=params[4])
-    print(f'ok {len(data)}')
-    for i in data:
-        print(len(i))
     return train_test_model(model, data)
 
 
 def use_extra_tree(args):
-    data, params = args if len(args) > 1 else args, None
+    data, params = args if len(args) == 2 else (args, None)
     model = ExtraTreesClassifier() if params is None else \
         ExtraTreesClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                              min_samples_split=params[3], min_samples_leaf=params[4],
@@ -65,7 +63,7 @@ def use_extra_tree(args):
 
 
 def use_random_forest(args):
-    data, params = args if len(args) > 1 else args, None
+    data, params = args if len(args) == 2 else (args, None)
     model = RandomForestClassifier() if params is None else \
         RandomForestClassifier(criterion=params[0], n_estimators=params[1], max_depth=params[2],
                                min_samples_split=params[3], min_samples_leaf=params[4],
@@ -74,7 +72,7 @@ def use_random_forest(args):
 
 
 def use_xgboost(args):
-    data, params = args if len(args) > 1 else args, None
+    data, params = args if len(args) == 2 else (args, None)
     model = None
     if params is None:
         model = XGBClassifier()
@@ -98,7 +96,8 @@ def conduct_tests(model, data, path=None):
         'XGBClassifier': use_xgboost
     }[model]
     with mp.Pool(processes=20) as pool:
-        results = pd.DataFrame(list(pool.map(function, params)))
+        results = pd.DataFrame([[str(i[0]), i[2], i[3]] for i in pool.map(function, params)])
+        results.columns = ['model', 'accuracy', 'time']
         if path is not None:
             results.to_csv(path)
         return results
@@ -107,20 +106,27 @@ def conduct_tests(model, data, path=None):
 def conduct_all(data):
     t = Util.measure_time()
     print('DecisionTreeClassifier')
-    conduct_tests('DecisionTreeClassifier', data, path='../results/tmp/DecisionTree_res')
-    print(f'tested {len(combine_params('DecisionTreeClassifier'))} in {Util.format_float(Util.measure_time(t))}')
+    conduct_tests('DecisionTreeClassifier', data, path='../results/DecisionTree_res')
+    print(f'tested {len(combine_params('DecisionTreeClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
+    t = Util.measure_time()
     print('ExtraTreesClassifier')
     conduct_tests('ExtraTreesClassifier', data, path='../results/ExtraTrees_res')
-    print(f'tested {len(combine_params('ExtraTreesClassifier'))} in {Util.format_float(Util.measure_time(t))}')
+    print(f'tested {len(combine_params('ExtraTreesClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
+    t = Util.measure_time()
     print('RandomForestClassifier')
     conduct_tests('RandomForestClassifier', data, path='../results/RandomForest_res')
-    print(f'tested {len(combine_params('RandomForestClassifier'))} in {Util.format_float(Util.measure_time(t))}')
+    print(f'tested {len(combine_params('RandomForestClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
+    t = Util.measure_time()
     print('XGBClassifier')
     conduct_tests('XGBClassifier', data, path='../results/XGB_res')
+    print(f'tested {len(combine_params('XGBClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
 
 
-x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
-y = DataManipulator.load('../data/in_csv/original_y')
-y = Util.ravel(y)
-data = Util.train_test_from(x, y)
-res = use_decision_tree((data,['gini',10,2,2,'sqrt']))
+if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
+    sys.argv[1] = "consumed"
+    print('preparing data for trees tests')
+    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
+    y = DataManipulator.load('../data/in_csv/y')
+    y = Util.ravel(y)
+    data = Util.train_test_from(x, y)
+    conduct_all(data)

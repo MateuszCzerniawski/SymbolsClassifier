@@ -1,26 +1,14 @@
-import pandas as pd
+import subprocess
 
-import DataManipulator
-import Visualizer
-import Trees
-import Neural
-import Util
+from scripts import DataManipulator, Visualizer
 
 if __name__ == "__main__":
-    # print('processing data')
-    # DataManipulator.process('../data/images/raw', '../data/images/parsed', '../data/in_csv', [2, 4])
-    # print('visualising data')
-    # Visualizer.visualise_symbols('../data/images/parsed', '../data/images/symbols', f'../graphs/blended.png')
-    # print('loading data')
-    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
-    y = DataManipulator.load('../data/in_csv/original_y')
-    y = Util.ravel(y)
-    data = Util.train_test_from(x, y)
+    print('processing data')
+    DataManipulator.process('../data/images/raw', '../data/images/parsed', '../data/in_csv', [2, 4, 8])
+    print('visualising data')
+    Visualizer.visualise_symbols('../data/images/parsed', '../data/images/symbols', f'../graphs/blended.png')
+    Visualizer.visualise_pca_variance('../data/in_csv', '../graphs/variancePCA.png')
     print('conducting tests for trees:')
-    Trees.conduct_all(data)
+    trees_result = subprocess.run(['../.venv/Scripts/python.exe', 'Trees.py', "__trees__"], text=True)
     print('conducting tests for nets')
-    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
-    y = DataManipulator.load('../data/in_csv/original_y')
-    y = Neural.categorise(y)
-    data = Util.train_test_from(x, y)
-    results = Neural.conduct_all(data, path='../results/nets')
+    nets_result = subprocess.run(['../.venv/Scripts/python.exe', 'Neural.py', "__nets__"], text=True)

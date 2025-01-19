@@ -207,7 +207,7 @@ def conduct_all(data, path=None):
 if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
     sys.argv[1] = "consumed"
     print('preparing data for nets tests')
-    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
+    x = DataManipulator.load('../data/in_csv/bilinear8_x', decompress=True)
     y = DataManipulator.load('../data/in_csv/y')
     y = categorise(y)
     data = Util.train_test_from(x, y)

@@ -213,5 +213,5 @@ if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
     data = Util.train_test_from(x, y)
     t = Util.measure_time()
     print('tests start')
-    conduct_all(data, path='../results/nets')
+    conduct_all(data, path='../results/bil8/nets')
     print('tests completed')

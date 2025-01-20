@@ -125,7 +125,7 @@ def conduct_all(data):
 if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
     sys.argv[1] = "consumed"
     print('preparing data for trees tests')
-    x = DataManipulator.load('../data/in_csv/original_x', decompress=True)
+    x = DataManipulator.load('../data/in_csv/bilinear8_x', decompress=True)
     y = DataManipulator.load('../data/in_csv/y')
     y = Util.ravel(y)
     data = Util.train_test_from(x, y)

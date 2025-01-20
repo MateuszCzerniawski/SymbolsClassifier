@@ -132,6 +132,6 @@ def visualise_results(input_path, output_path, missing=None):
     Util.save_plot(output_path)
 
 
-visualise_results('../results/DecisionTree_res', '../graphs/DTacc', missing=missing_dt_values)
-visualise_results('../results/ExtraTrees_res', '../graphs/ETacc', missing=missing_et_values)
-visualise_results('../results/RandomForest_res', '../graphs/RFacc',missing=missing_rf_values)
+visualise_results('../results/bil8/DecisionTree_res', '../graphs/DTacc', missing=missing_dt_values)
+visualise_results('../results/bil8/ExtraTrees_res', '../graphs/ETacc', missing=missing_et_values)
+visualise_results('../results/bil8/RandomForest_res', '../graphs/RFacc', missing=missing_rf_values)

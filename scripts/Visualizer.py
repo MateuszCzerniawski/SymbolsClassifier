@@ -17,7 +17,8 @@ missing_dt_values = [('max_features', 'None'), ('min_samples_split', 2), ('max_d
                      ('criterion', '\'gini\'')]
 missing_et_values = [('n_estimators', 100), ('max_features', 'sqrt'), ('min_samples_split', 2), ('max_depth', 'None'),
                      ('criterion', '\'gini\'')]
-missing_rf_values=missing_et_values
+missing_rf_values = missing_et_values
+
 
 def visualise_symbols(parsed_images_dir, symbols_dir, output_path):
     blended = dict()
@@ -95,7 +96,7 @@ def visualise_pca_variance(input_dir, output_path):
     Util.save_plot(output_path)
 
 
-def visualise_results(input_path, output_path, missing=None):
+def visualise_trees_results(input_path, output_path, missing=None):
     data = pd.read_csv(input_path)
     param_dict = dict()
     for index, row in data.iterrows():
@@ -132,6 +133,64 @@ def visualise_results(input_path, output_path, missing=None):
     Util.save_plot(output_path)
 
 
-visualise_results('../results/bil8/DecisionTree_res', '../graphs/DTacc', missing=missing_dt_values)
-visualise_results('../results/bil8/ExtraTrees_res', '../graphs/ETacc', missing=missing_et_values)
-visualise_results('../results/bil8/RandomForest_res', '../graphs/RFacc', missing=missing_rf_values)
+def visualise_nets_results(input_path, output_path):
+    data = pd.read_csv(input_path)
+    param_dict = {'layer2': dict(), 'layer3': dict(), 'reg_val': dict(), 'reg': dict(),
+                  'epochs': dict(), 'batch': dict(), 'learning_rate': dict(), 'optimiser': dict()}
+    for index, row in data.iterrows():
+        for p in param_dict.keys():
+            if row[p] not in param_dict[p]:
+                param_dict[p][row[p]] = []
+            else:
+                param_dict[p][row[p]].append((row['accuracy'], row['time']))
+    plt.close()
+    fig, axes = plt.subplots(2, len(param_dict.keys()) // 2, figsize=(5 * len(param_dict.keys()), 3 * 5))
+    index = -1
+    for param in param_dict:
+        index += 1
+        tmp = 0
+        axes[index // 4, index % 4].set_title(str(param))
+        for val in param_dict[param]:
+            accuracies = [i[0] for i in param_dict[param][val]]
+            accuracies = pd.value_counts(pd.cut(accuracies, bins=10), sort=False)
+            color = colors[tmp] if tmp < len(colors) else 'black'
+            accuracies.plot(kind='bar', ax=axes[index // 4, index % 4], position=tmp, width=0.1, color=color,
+                            label=str(val))
+            tmp += 1
+        axes[index // 4, index % 4].legend()
+    plt.tight_layout()
+    Util.save_plot(output_path)
+
+
+def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_time=None):
+    models = {'DecisionTree': [], 'ExtraTree': [], 'RandomForest': [], 'XGB': [], 'net': []}
+    for name in os.listdir(input_dir):
+        for m in models:
+            if m in name:
+                for index, row in pd.read_csv(f'{input_dir}/{name}').iterrows():
+                    models[m].append((row['accuracy'], row['time']))
+    plt.close()
+    plt.figure(figsize=(10, 10))
+    index = 0
+    for name, points in models.items():
+        if min_accuracy is not None:
+            points = [p for p in points if p[0] >= min_accuracy ]
+        if max_time is not None:
+            points = [p for p in points if p[1] <= max_time]
+        accuracies, times = [i[0] for i in points], [i[1] for i in points]
+        color = colors[index] if index < len(colors) else 'black'
+        index += 1
+        plt.scatter(times, accuracies, label=name, color=color, alpha=0.2)
+    plt.legend()
+    plt.xlabel('time')
+    plt.ylabel('accuracy')
+    plt.title('model accuracy to training time')
+    Util.save_plot(output_path)
+
+
+visualise_trees_results('../results/bil8/DecisionTree_res', '../graphs/DTacc', missing=missing_dt_values)
+visualise_trees_results('../results/bil8/ExtraTrees_res', '../graphs/ETacc', missing=missing_et_values)
+visualise_trees_results('../results/bil8/RandomForest_res', '../graphs/RFacc', missing=missing_rf_values)
+visualise_nets_results('../results/bil8/nets', '../graphs/nets_acc')
+visualise_accuracy_to_time('../results/bil8', '../graphs/accuracy to time')
+visualise_accuracy_to_time('../results/bil8', '../graphs/accuracy to time (min acc)', min_accuracy=0.8)

@@ -131,8 +131,7 @@ def combine_tests():
         if is_ok:
             tmp.append(i)
     nets = tmp
-    params = list(
-        itertools.product(pos_epochs, pos_batches, pos_learning_rates, pos_optimizers))
+    params = list(itertools.product(pos_epochs, pos_batches, pos_learning_rates, pos_optimizers))
     nets = list(itertools.product(nets, params))
     tmp = []
     for n, p in nets:
@@ -140,7 +139,7 @@ def combine_tests():
         n['batch'] = p[1]
         n['learning_rate'] = p[2]
         n['optimiser'] = p[3]
-        tmp.append(n)
+        tmp.append(n.copy())
     nets = tmp
     return nets
 

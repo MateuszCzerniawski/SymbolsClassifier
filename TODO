@@ -25,10 +25,10 @@
 { } Wizualizacja:
     [X] wizualizacja idealnych figur
     [ ] wykresy procesu uczenia sieci
-    [ ] wykresy grupujące hiperparametry sieci
+    [X] wykresy grupujące hiperparametry sieci
     [ ] wykresy drzew
-    [ ] wykresy grupujące drzewa
-    [ ] wykres zestawiający drzewa przeciwko sieciom
+    [X] wykresy grupujące drzewa
+    [X] wykres zestawiający drzewa przeciwko sieciom
 { } PCA
     [ ] Skrypt do adaptacji danych przez PCA
     [ ] Wykorzystanie PCA dla różnych wymiarów

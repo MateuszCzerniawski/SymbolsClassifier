@@ -96,29 +96,29 @@ def conduct_tests(model, data, path=None):
         'XGBClassifier': use_xgboost
     }[model]
     with mp.Pool(processes=20) as pool:
-        results = pd.DataFrame([[str(i[0]), i[2], i[3]] for i in pool.map(function, params)])
+        results = pd.DataFrame([[Util.all_model_params(i[0]), i[2], i[3]] for i in pool.map(function, params)])
         results.columns = ['model', 'accuracy', 'time']
         if path is not None:
             results.to_csv(path)
         return results
 
 
-def conduct_all(data):
+def conduct_all(data, output_dir, label=''):
     t = Util.measure_time()
     print('DecisionTreeClassifier')
-    conduct_tests('DecisionTreeClassifier', data, path='../results/DecisionTree_res')
+    conduct_tests('DecisionTreeClassifier', data, path=f'{output_dir}/DT{label}')
     print(f'tested {len(combine_params('DecisionTreeClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
     t = Util.measure_time()
     print('ExtraTreesClassifier')
-    conduct_tests('ExtraTreesClassifier', data, path='../results/ExtraTrees_res')
+    conduct_tests('ExtraTreesClassifier', data, path=f'{output_dir}/ET{label}')
     print(f'tested {len(combine_params('ExtraTreesClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
     t = Util.measure_time()
     print('RandomForestClassifier')
-    conduct_tests('RandomForestClassifier', data, path='../results/RandomForest_res')
+    conduct_tests('RandomForestClassifier', data, path=f'{output_dir}/RF{label}')
     print(f'tested {len(combine_params('RandomForestClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
     t = Util.measure_time()
     print('XGBClassifier')
-    conduct_tests('XGBClassifier', data, path='../results/XGB_res')
+    conduct_tests('XGBClassifier', data, path=f'{output_dir}/XGB{label}')
     print(f'tested {len(combine_params('XGBClassifier'))} in {Util.format_float(Util.measure_time(t))}s')
 
 
@@ -129,4 +129,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
     y = DataManipulator.load('../data/in_csv/y')
     y = Util.ravel(y)
     data = Util.train_test_from(x, y)
-    conduct_all(data)
+    conduct_all(data, '../results/bil8', label='bil8')
+    print('conducting pca tests for trees')
+    for i in range(10, min(data[0].shape) + 1, 5):
+        train, test, variance = Util.use_pca(data[0], data[2], i)
+        compressed = (train, data[1], test, data[3])
+        print(f'dim={i} var={Util.format_float(variance)}')
+        conduct_all(compressed, '../results/PCA', f'_pca{i}')

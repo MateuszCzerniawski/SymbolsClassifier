@@ -1,6 +1,7 @@
 import math
 import os
 import re
+import statistics
 import warnings
 
 import cv2
@@ -108,7 +109,10 @@ def visualise_trees_results(input_path, output_path, missing=None):
                     params = f'{m[0]}={m[1]},' + params
         params = [i.replace('\n', '') for i in params.split(',')]
         for p in params:
-            param, val = p.split('=')
+            try:
+                param, val = p.split('=')
+            except ValueError:
+                continue
             if param not in param_dict:
                 param_dict[param] = dict()
             elif val not in param_dict[param]:
@@ -116,9 +120,10 @@ def visualise_trees_results(input_path, output_path, missing=None):
             else:
                 param_dict[param][val].append((row['accuracy'], row['time']))
     plt.close()
-    fig, axes = plt.subplots(1, len(param_dict.keys()), figsize=(5 * len(param_dict.keys()), 5))
+    valid_keys = [p for p in param_dict.keys() if len(param_dict[p]) > 1]
+    fig, axes = plt.subplots(1, len(valid_keys), figsize=(5 * len(valid_keys), 5))
     index = -1
-    for param in param_dict:
+    for param in valid_keys:
         index += 1
         tmp = 0
         axes[index].set_title(str(param))
@@ -174,7 +179,7 @@ def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_ti
     index = 0
     for name, points in models.items():
         if min_accuracy is not None:
-            points = [p for p in points if p[0] >= min_accuracy ]
+            points = [p for p in points if p[0] >= min_accuracy]
         if max_time is not None:
             points = [p for p in points if p[1] <= max_time]
         accuracies, times = [i[0] for i in points], [i[1] for i in points]
@@ -188,9 +193,37 @@ def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_ti
     Util.save_plot(output_path)
 
 
-visualise_trees_results('../results/bil8/DecisionTree_res', '../graphs/DTacc', missing=missing_dt_values)
-visualise_trees_results('../results/bil8/ExtraTrees_res', '../graphs/ETacc', missing=missing_et_values)
-visualise_trees_results('../results/bil8/RandomForest_res', '../graphs/RFacc', missing=missing_rf_values)
-visualise_nets_results('../results/bil8/nets', '../graphs/nets_acc')
-visualise_accuracy_to_time('../results/bil8', '../graphs/accuracy to time')
-visualise_accuracy_to_time('../results/bil8', '../graphs/accuracy to time (min acc)', min_accuracy=0.8)
+def visualise_pca(input_dir, output_path):
+    models = dict()
+    for name in os.listdir(input_dir):
+        model = re.search(r'^(.*)_', name).group(1)
+        dim = re.search(r'(\d+)$', name).group(1)
+        if model not in models:
+            models[model] = dict()
+        data = pd.read_csv(f'{input_dir}/{name}')
+        data = data.sort_values(by='accuracy')
+        models[model][dim] = (list(data['accuracy'][:10]), list(data['time'][:10]))
+    tmp = dict()
+    for model, dims in models.items():
+        tmp[model]=[(int(dim), vals[0][0], statistics.mean(vals[0]), vals[1][0], statistics.mean(vals[1]))
+               for dim, vals in dims.items()]
+        tmp[model].sort(key=lambda x: x[0])
+    models = tmp
+    plt.close()
+    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    for model, info in models.items():
+        dims = [i[0] for i in info]
+        axes[0, 0].plot(dims, [i[1] for i in info], label=f'{model}')
+        axes[0, 1].plot(dims, [i[2] for i in info], label=f'{model}')
+        axes[1, 0].plot(dims, [i[3] for i in info], label=f'{model}')
+        axes[1, 1].plot(dims, [i[4] for i in info], label=f'{model}')
+    axes[0, 0].set_title('best accuracy')
+    axes[0, 1].set_title('average accuracy')
+    axes[1, 0].set_title('best time')
+    axes[1, 1].set_title('average time')
+    axes[0, 0].legend()
+    axes[0, 1].legend()
+    axes[1, 0].legend()
+    axes[1, 1].legend()
+    plt.tight_layout()
+    Util.save_plot(output_path)

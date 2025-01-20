@@ -1,5 +1,6 @@
 import os
 import time
+import re
 
 import numpy as np
 import pandas as pd
@@ -44,3 +45,10 @@ def use_pca(train, test, dims, reverse=False):
         train = pca.inverse_transform(train)
         test = pca.inverse_transform(test)
     return train, test, variance
+
+
+def all_model_params(model):
+    replacement = ''
+    for p, v in model.get_params().items():
+        replacement += f'{p}={v}, '
+    return f'{re.search(r'^(.*)\(', str(model)).group(1)}({replacement[:-2]})'

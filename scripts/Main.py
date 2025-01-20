@@ -12,3 +12,4 @@ if __name__ == "__main__":
     trees_result = subprocess.run(['../.venv/Scripts/python.exe', 'Trees.py', "__trees__"], text=True)
     print('conducting tests for nets')
     nets_result = subprocess.run(['../.venv/Scripts/python.exe', 'Neural.py', "__nets__"], text=True)
+

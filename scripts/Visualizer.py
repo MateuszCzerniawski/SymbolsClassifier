@@ -193,7 +193,7 @@ def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_ti
     Util.save_plot(output_path)
 
 
-def visualise_pca(input_dir, output_path):
+def visualise_pca(input_dir, output_path, top=10):
     models = dict()
     for name in os.listdir(input_dir):
         model = re.search(r'^(.*)_', name).group(1)
@@ -201,12 +201,12 @@ def visualise_pca(input_dir, output_path):
         if model not in models:
             models[model] = dict()
         data = pd.read_csv(f'{input_dir}/{name}')
-        data = data.sort_values(by='accuracy',ascending=False)
-        models[model][dim] = (list(data['accuracy'][:10]), list(data['time'][:10]))
+        data = data.sort_values(by='accuracy', ascending=False)
+        models[model][dim] = (list(data['accuracy'][:top + 1]), list(data['time'][:top + 1]))
     tmp = dict()
     for model, dims in models.items():
-        tmp[model]=[(int(dim), vals[0][0], statistics.mean(vals[0]), vals[1][0], statistics.mean(vals[1]))
-               for dim, vals in dims.items()]
+        tmp[model] = [(int(dim), vals[0][0], statistics.mean(vals[0]), vals[1][0], statistics.mean(vals[1]))
+                      for dim, vals in dims.items()]
         tmp[model].sort(key=lambda x: x[0])
     models = tmp
     plt.close()
@@ -227,3 +227,84 @@ def visualise_pca(input_dir, output_path):
     axes[1, 1].legend()
     plt.tight_layout()
     Util.save_plot(output_path)
+
+
+def visualise_params_popularity(input_dir, output_dir, top=20):
+    models = dict()
+    for name in os.listdir(input_dir):
+        model = re.search(r'^(.*)_', name).group(1)
+        dim = re.search(r'(\d+)$', name).group(1)
+        if model not in models:
+            models[model] = dict()
+        data = pd.read_csv(f'{input_dir}/{name}')
+        data = data.sort_values(by='accuracy', ascending=False)[:top + 1]
+        param_dict = dict()
+        if 'model' in data:
+            for index, row in data.iterrows():
+                params = re.search(r'\(([^()]*|\([^()]*\))*\)', row['model']).group(0)[1:-1]
+                params = params.replace(' ', '')
+                params = [i.replace('\n', '') for i in params.split(',')]
+                for p in params:
+                    try:
+                        param, val = p.split('=')
+                    except ValueError:
+                        continue
+                    if param not in param_dict:
+                        param_dict[param] = dict()
+                    elif val not in param_dict[param]:
+                        param_dict[param][val] = 1
+                    else:
+                        param_dict[param][val] += 1
+        else:
+            param_dict = {'layer2': dict(), 'layer3': dict(), 'reg_val': dict(), 'reg': dict(),
+                          'epochs': dict(), 'batch': dict(), 'learning_rate': dict(), 'optimiser': dict()}
+            for index, row in data.iterrows():
+                for key in param_dict:
+                    if row[key] not in param_dict[key]:
+                        param_dict[key][row[key]] = 1
+                    else:
+                        param_dict[key][row[key]] += 1
+        models[model][dim] = {k: v for k, v in param_dict.items() if len(param_dict[k]) > 1}
+    models = [(model, sorted(list(dims.items()), key=lambda x: int(x[0]))) for model, dims in
+              list(models.items())]
+    counts = []
+    for model, dims in models:
+        tmp = []
+        for d, v in dims:
+            tmp.extend(list(v.keys()))
+        dims = {k: [(int(d), v[k] if k in v else {'default': top}) for d, v in dims] for k in set(tmp)}
+        for param, vals in dims.items():
+            counts.extend([v[0] for v in vals])
+        dims = {k: [v[1] for v in vals] for k, vals in dims.items()}
+        for param, vals in dims.items():
+            tmp = []
+            for v in vals:
+                tmp.extend(v.keys())
+            vals.insert(0, list(set(tmp)))
+            for v in vals[1:]:
+                for k in vals[0]:
+                    if k not in v:
+                        v[k] = 0
+        for param in dims.keys():
+            rewrite = {k: [] for k in dims[param][0]}
+            for k in rewrite.keys():
+                rewrite[k] = [vals[k] for vals in dims[param][1:]]
+            dims[param] = rewrite
+        counts = list(set(counts))
+        plt.close()
+        fig, axes = plt.subplots(1, len(dims.keys()), figsize=(5 * len(dims.keys()), 5))
+        index = -1
+        for param, vals in dims.items():
+            index += 1
+            control = [0 for i in range(len(counts))]
+            for label, values in vals.items():
+                axes[index].plot(counts, values, label=label)
+                control=[control[i]+values[i] for i in range(len(counts))]
+            axes[index].plot(counts, control, label='control',color='black')
+            axes[index].legend()
+            axes[index].set_title(param)
+        plt.tight_layout()
+        Util.save_plot(f'{output_dir}/hiperparams_{model}')
+
+
+visualise_params_popularity('../results/PCA', '../graphs/PCA')

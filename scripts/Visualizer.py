@@ -201,7 +201,7 @@ def visualise_pca(input_dir, output_path):
         if model not in models:
             models[model] = dict()
         data = pd.read_csv(f'{input_dir}/{name}')
-        data = data.sort_values(by='accuracy')
+        data = data.sort_values(by='accuracy',ascending=False)
         models[model][dim] = (list(data['accuracy'][:10]), list(data['time'][:10]))
     tmp = dict()
     for model, dims in models.items():

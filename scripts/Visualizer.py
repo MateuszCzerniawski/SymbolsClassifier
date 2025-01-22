@@ -193,7 +193,7 @@ def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_ti
     Util.save_plot(output_path)
 
 
-def visualise_pca(input_dir, output_path, top=10):
+def visualise_time_and_accuracy_over_dims(input_dir, output_path, top=10):
     models = dict()
     for name in os.listdir(input_dir):
         model = re.search(r'^(.*)_', name).group(1)
@@ -307,4 +307,5 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
         Util.save_plot(f'{output_dir}/hiperparams_{model}')
 
 
-visualise_params_popularity('../results/PCA', '../graphs/PCA')
+
+

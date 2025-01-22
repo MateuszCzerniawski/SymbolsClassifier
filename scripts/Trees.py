@@ -140,7 +140,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
         y = DataManipulator.load('../data/in_csv/y')
         y = Util.ravel(y)
         data = Util.train_test_from(x, y)
-        conduct_all(data, f'../results/bil{i}', label=f'bil{i}')
+        conduct_all(data, '../results/bil', label=f'_bil{i}')
     print('conducting pca tests for trees')
     for i in range(10, min(data[0].shape) + 1, 5):
         train, test, variance = Util.use_pca(data[0], data[2], i)

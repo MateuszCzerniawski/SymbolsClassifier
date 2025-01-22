@@ -204,7 +204,7 @@ def conduct_all(data, path=None):
 if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
     sys.argv[1] = "consumed"
     mp.set_start_method('spawn')
-    print('preparing data for nets tests')
+    print('preparing data for NET_bil8 tests')
     for i in list(range(11, 21)):
         print(i)
         if not os.path.exists(f'../results/bil{i}'):
@@ -214,11 +214,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
         y = categorise(y)
         data = Util.train_test_from(x, y)
         print('tests start')
-        conduct_all_multiprocess(data, path=f'../results/bil{i}/nets')
+        conduct_all_multiprocess(data, path=f'../results/bil/NET_bil{i}')
         print('tests completed')
-    # print('starting neural nets tests for PCA')
-    # for i in range(10, min(data[0].shape) + 1, 5):
-    #     train, test, variance = Util.use_pca(data[0], data[2], i)
-    #     compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
-    #     print(f'dim={i} var={Util.format_float(variance)}')
-    #     conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')
+    print('starting neural NET_bil8 tests for PCA')
+    for i in range(10, min(data[0].shape) + 1, 5):
+        train, test, variance = Util.use_pca(data[0], data[2], i)
+        compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
+        print(f'dim={i} var={Util.format_float(variance)}')
+        conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')

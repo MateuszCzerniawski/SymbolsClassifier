@@ -31,6 +31,12 @@ model_hiperparameters = {
     'RandomForestClassifier': [criteria, n_estimators, max_depths, min_splits, min_leaves, max_features],
     'XGBClassifier': [n_estimators, max_depths, learning_rates, gammas, min_child_weight, reg]
 }
+model_short = {
+    'DT':'DecisionTreeClassifier',
+    'ET':'ExtraTreesClassifier',
+    'RF':'RandomForestClassifier',
+    'XGB':'XGBClassifier'
+}
 
 
 def combine_params(model):
@@ -134,7 +140,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
         y = DataManipulator.load('../data/in_csv/y')
         y = Util.ravel(y)
         data = Util.train_test_from(x, y)
-        conduct_all(data, f'../results/bil{i}', label='bil8')
+        conduct_all(data, f'../results/bil{i}', label=f'bil{i}')
     print('conducting pca tests for trees')
     for i in range(10, min(data[0].shape) + 1, 5):
         train, test, variance = Util.use_pca(data[0], data[2], i)

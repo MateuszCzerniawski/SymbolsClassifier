@@ -166,5 +166,6 @@ def process(input_dir, parsed_dir, csv_dir, minimisation_scales):
     for name in os.listdir(csv_dir):
         if '_y' in name and ('bilinear' in name or 'nearest' in name):
             os.remove(f'{csv_dir}/{name}')
+    os.remove(f'{csv_dir}/y')
     os.rename(f'{csv_dir}/original_y', f'{csv_dir}/y')
     return x, y

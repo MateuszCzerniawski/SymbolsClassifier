@@ -307,4 +307,4 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
         Util.save_plot(f'{output_dir}/hiperparams_{model}')
 
 
-visualise_params_popularity('../results/PCA', '../graphs/PCA')
+#visualise_params_popularity('../results/PCA', '../graphs/PCA')

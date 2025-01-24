@@ -172,18 +172,22 @@ def use_net(input):
     return tuple(output)
 
 
-def conduct_all_multiprocess(data, path=None):
+def conduct_all_multiprocess(data, path=None):  # WARNING! very memory hungry, can, lead to memory error
     in_out = [(len(data[0].iloc[0]),), 12]
     tests = [(data, in_out, params) for params in combine_tests()]
-    with mp.Pool(processes=20) as pool:
-        results = [i for i in pool.map(use_net, tests)]
-        results = pd.DataFrame(results)
-        results.columns = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5',
-                           'reg_val', 'dropout', 'reg', 'epochs', 'batch',
-                           'learning_rate', 'optimiser', 'accuracy', 'loss', 'mae', 'time']
-        if path is not None:
-            results.to_csv(path)
-        return results
+    try:
+        with mp.Pool(processes=20) as pool:
+            results = [i for i in pool.map(use_net, tests)]
+            results = pd.DataFrame(results)
+            results.columns = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5',
+                               'reg_val', 'dropout', 'reg', 'epochs', 'batch',
+                               'learning_rate', 'optimiser', 'accuracy', 'loss', 'mae', 'time']
+            if path is not None:
+                results.to_csv(path)
+            return results
+    finally:
+        pool.close()
+        pool.join()
 
 
 def conduct_all(data, path=None):
@@ -205,20 +209,28 @@ if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
     sys.argv[1] = "consumed"
     mp.set_start_method('spawn')
     print('preparing data for NET_bil8 tests')
-    for i in list(range(11, 21)):
+    for i in list(range(5, 1, -1)):
         print(i)
-        if not os.path.exists(f'../results/bil{i}'):
-            os.mkdir(f'../results/bil{i}')
         x = DataManipulator.load(f'../data/in_csv/bilinear{i}_x', decompress=True)
         y = DataManipulator.load('../data/in_csv/y')
         y = categorise(y)
         data = Util.train_test_from(x, y)
         print('tests start')
-        conduct_all_multiprocess(data, path=f'../results/bil/NET_bil{i}')
+        try:
+            conduct_all_multiprocess(data, path=f'../results/bil/NET_bil{i}')
+        except MemoryError:
+            conduct_all(data, path=f'../results/bil/NET_bil{i}')
         print('tests completed')
-    print('starting neural NET_bil8 tests for PCA')
-    for i in range(10, min(data[0].shape) + 1, 5):
-        train, test, variance = Util.use_pca(data[0], data[2], i)
-        compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
-        print(f'dim={i} var={Util.format_float(variance)}')
-        conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')
+    # print('starting neural NET_bil8 tests for PCA')
+    # x = DataManipulator.load(f'../data/in_csv/original_x', decompress=True)
+    # y = DataManipulator.load('../data/in_csv/y')
+    # y = categorise(y)
+    # data = Util.train_test_from(x, y)
+    # for i in range(10, min(data[0].shape) + 1, 5):
+    #     train, test, variance = Util.use_pca(data[0], data[2], i)
+    #     compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
+    #     print(f'dim={i} var={Util.format_float(variance)}')
+    #     try:
+    #         conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')
+    #     except MemoryError:
+    #         conduct_all(compressed, f'../results/PCA/NET_pca{i}')

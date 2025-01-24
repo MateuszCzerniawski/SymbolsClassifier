@@ -263,7 +263,7 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
                     for p in params:
                         try:
                             param, val = p.split('=')
-                            param=param.replace('\r','')
+                            param = param.replace('\r', '')
                         except ValueError:
                             continue
                         if param not in models[model]:
@@ -287,9 +287,9 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
                         tmp[i] -= v
                 models[model][param][missing_value] = tmp
     for model in models.keys():
-        to_delete=['files']
+        to_delete = ['files']
         for key in models[model].keys():
-            if len(models[model][key])<=1:
+            if len(models[model][key]) <= 1:
                 to_delete.append(key)
         for key in to_delete:
             del models[model][key]
@@ -307,5 +307,40 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
         Util.save_plot(f'{output_dir}/hiperparams_{model}')
 
 
+def visualise_best_nets_params(input_dir, output_path, min_accuracy=0.95, min_dim=20, max_dim=60):
+    files = [name for name in os.listdir(input_dir) if re.search(r'^(.*)_', name).group(1) not in Trees.model_short]
+    all_dims = [int(re.search(r'(\d+)$', name).group(1)) for name in files]
+    if min_dim is not None and max_dim is not None:
+        all_dims = [d for d in all_dims if min_dim <= d <= max_dim]
+    files = [name for name in files if any([d == int(re.search(r'(\d+)$', name).group(1)) for d in all_dims])]
+    param_dict = {'layer2': dict(), 'layer3': dict(), 'reg_val': dict(),
+                  'reg': dict(), 'epochs': dict(), 'batch': dict(), 'learning_rate': dict(), 'optimiser': dict()}
+    insert_index = -1
+    for filename in files:
+        data = pd.read_csv(f'{input_dir}/{filename}')
+        insert_index += 1
+        if min_accuracy is not None:
+            data = data[data['accuracy'] >= min_accuracy]
+        for index, row in data.iterrows():
+            for param in param_dict.keys():
+                if row[param] not in param_dict[param]:
+                    param_dict[param][row[param]] = [0 for i in range(len(all_dims))]
+                param_dict[param][row[param]][insert_index] += 1
+        for param in param_dict.keys():
+            total = sum([param_dict[param][p][insert_index] for p in param_dict[param].keys()])
+            for p in param_dict[param].keys():
+                param_dict[param][p][insert_index] /= total
+    plt.close()
+    fig, axes = plt.subplots(1, len(param_dict.keys()), figsize=(5 * len(param_dict.keys()), 5))
+    index = -1
+    for param, vals in param_dict.items():
+        index += 1
+        for label, values in vals.items():
+            axes[index].plot(all_dims, values, label=label)
+        axes[index].legend()
+        axes[index].set_title(param)
+    plt.tight_layout()
+    Util.save_plot(output_path)
 
 
+visualise_best_nets_params('../results/PCA', '../graphs/best nets params')

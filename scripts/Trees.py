@@ -132,18 +132,16 @@ def conduct_all(data, output_dir, label=''):
 if len(sys.argv) > 1 and sys.argv[1] == "__trees__":
     sys.argv[1] = "consumed"
     print('preparing data for trees tests')
-    for i in list(range(2, 21)):
+    for i in list(range(2, 8)):
         print(i)
-        if not os.path.exists(f'../results/bil{i}'):
-            os.mkdir(f'../results/bil{i}')
         x = DataManipulator.load('../data/in_csv/bilinear8_x', decompress=True)
         y = DataManipulator.load('../data/in_csv/y')
         y = Util.ravel(y)
         data = Util.train_test_from(x, y)
         conduct_all(data, '../results/bil', label=f'_bil{i}')
-    print('conducting pca tests for trees')
-    for i in range(10, min(data[0].shape) + 1, 5):
-        train, test, variance = Util.use_pca(data[0], data[2], i)
-        compressed = (train, data[1], test, data[3])
-        print(f'dim={i} var={Util.format_float(variance)}')
-        conduct_all(compressed, '../results/PCA', f'_pca{i}')
+    # print('conducting pca tests for trees')
+    # for i in range(10, min(data[0].shape) + 1, 5):
+    #     train, test, variance = Util.use_pca(data[0], data[2], i)
+    #     compressed = (train, data[1], test, data[3])
+    #     print(f'dim={i} var={Util.format_float(variance)}')
+    #     conduct_all(compressed, '../results/PCA', f'_pca{i}')

@@ -144,6 +144,25 @@ def combine_tests():
     return nets
 
 
+def net_from_record(record):
+    layers = []
+    for l in ['layer1', 'layer2', 'layer3', 'layer4', 'layer5']:
+        if record[l] != 0:
+            layers.append(record[l])
+        del record[l]
+    record['units'] = layers
+    if 'reg_val' in record:
+        record['reg_vals'] = record['reg_val']
+    for key in ['reg_val', 'dropout', 'accuracy', 'time', 'mae', 'loss']:
+        if key in record:
+            del record[key]
+    return dict(record)
+
+
+def nets_from_file(path):
+    return [net_from_record(row) for index, row in pd.read_csv(path).iterrows()]
+
+
 def use_net(input):
     data, in_out, params = input
     model = build_net(in_out[0], in_out[1], params['units'], function='elu',
@@ -172,9 +191,10 @@ def use_net(input):
     return tuple(output)
 
 
-def conduct_all_multiprocess(data, path=None):  # WARNING! very memory hungry, can, lead to memory error
+def conduct_all_multiprocess(data, path=None, tests=None):  # WARNING! very memory hungry, can lead to memory error
     in_out = [(len(data[0].iloc[0]),), 12]
-    tests = [(data, in_out, params) for params in combine_tests()]
+    if tests is None:
+        tests = [(data, in_out, params) for params in combine_tests()]
     try:
         with mp.Pool(processes=20) as pool:
             results = [i for i in pool.map(use_net, tests)]
@@ -190,9 +210,10 @@ def conduct_all_multiprocess(data, path=None):  # WARNING! very memory hungry, c
         pool.join()
 
 
-def conduct_all(data, path=None):
+def conduct_all(data, path=None, tests=None):
     in_out = [(len(data[0].iloc[0]),), 12]
-    tests = [(data, in_out, params) for params in combine_tests()]
+    if tests is None:
+        tests = [(data, in_out, params) for params in combine_tests()]
     results = []
     for test in tests:
         results.append(use_net(test))
@@ -221,16 +242,36 @@ if len(sys.argv) > 1 and sys.argv[1] == "__nets__":
         except MemoryError:
             conduct_all(data, path=f'../results/bil/NET_bil{i}')
         print('tests completed')
-    # print('starting neural NET_bil8 tests for PCA')
-    # x = DataManipulator.load(f'../data/in_csv/original_x', decompress=True)
-    # y = DataManipulator.load('../data/in_csv/y')
-    # y = categorise(y)
-    # data = Util.train_test_from(x, y)
-    # for i in range(10, min(data[0].shape) + 1, 5):
-    #     train, test, variance = Util.use_pca(data[0], data[2], i)
-    #     compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
-    #     print(f'dim={i} var={Util.format_float(variance)}')
-    #     try:
-    #         conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')
-    #     except MemoryError:
-    #         conduct_all(compressed, f'../results/PCA/NET_pca{i}')
+    print('starting neural NET_bil8 tests for PCA')
+    x = DataManipulator.load(f'../data/in_csv/original_x', decompress=True)
+    y = DataManipulator.load('../data/in_csv/y')
+    y = categorise(y)
+    data = Util.train_test_from(x, y)
+    for i in range(10, min(data[0].shape) + 1, 5):
+        train, test, variance = Util.use_pca(data[0], data[2], i)
+        compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
+        print(f'dim={i} var={Util.format_float(variance)}')
+        try:
+            conduct_all_multiprocess(compressed, f'../results/PCA/NET_pca{i}')
+        except MemoryError:
+            conduct_all(compressed, f'../results/PCA/NET_pca{i}')
+
+if len(sys.argv) > 1 and sys.argv[1] == "__best-nets__":
+    sys.argv[1] = "consumed"
+    try:
+        mp.set_start_method('spawn')
+    finally:
+        print('starting best nets tests for PCA')
+    x = DataManipulator.load(f'../data/in_csv/original_x', decompress=True)
+    y = DataManipulator.load('../data/in_csv/y')
+    y = categorise(y)
+    data = Util.train_test_from(x, y)
+    tests = nets_from_file('../results/best_nets')
+    for i in range(20, 61, 5):
+        train, test, variance = Util.use_pca(data[0], data[2], i)
+        compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])
+        print(f'dim={i} var={Util.format_float(variance)}')
+        try:
+            conduct_all_multiprocess(compressed, f'../results/best/NET_pca{i}')
+        except MemoryError:
+            conduct_all(compressed, f'../results/best/NET_pca{i}')

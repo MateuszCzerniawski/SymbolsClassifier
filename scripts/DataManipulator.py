@@ -48,9 +48,10 @@ def minimise(image, scale):
     return nearest, bilinear
 
 
-def parse_all(input_dir, output_dir, names=symbols_names):
+def parse_all(input_dir, output_dir, names=symbols_names,filenames=None):
     images, labels = [], []
-    for name in os.listdir(input_dir):
+    filenames = list(os.listdir(input_dir)) if filenames is None else filenames
+    for name in filenames:
         img, l = parse_img(f'{input_dir}/{name}', output_dir, names=names, output_label=name)
         images.extend(img)
         labels.extend(l)
@@ -155,8 +156,8 @@ def load(path, decompress=False, width=None):
     return df
 
 
-def process(input_dir, parsed_dir, csv_dir, minimisation_scales):
-    parse_all(input_dir, parsed_dir)
+def process(input_dir, parsed_dir, csv_dir, minimisation_scales=[], filenames=None):
+    parse_all(input_dir, parsed_dir, filenames=filenames)
     x, y = dir_to_csv(parsed_dir, f'{csv_dir}/original_x', f'{csv_dir}/original_y')
     for scale in minimisation_scales:
         nearest, bilinear = f'{parsed_dir}/../nearest{scale}', f'{parsed_dir}/../bilinear{scale}'

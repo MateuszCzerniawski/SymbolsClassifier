@@ -167,13 +167,20 @@ def visualise_nets_results(input_path, output_path):
     Util.save_plot(output_path)
 
 
-def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_time=None):
-    models = {'DecisionTree': [], 'ExtraTree': [], 'RandomForest': [], 'XGB': [], 'net': []}
+def visualise_accuracy_to_time(input_dir, output_path, allowed_models=None, allowed_numbers=None, min_accuracy=None,
+                               max_time=None):
+    models = dict()
     for name in os.listdir(input_dir):
-        for m in models:
-            if m in name:
-                for index, row in pd.read_csv(f'{input_dir}/{name}').iterrows():
-                    models[m].append((row['accuracy'], row['time']))
+        model = re.search(r'^(.*)_', name).group(1)
+        num = int(re.search(r'(\d+)$', name).group(1))
+        if allowed_models is not None and model not in allowed_models:
+            continue
+        if allowed_numbers is not None and num not in allowed_numbers:
+            continue
+        if name not in models:
+            models[name] = []
+        for index, row in pd.read_csv(f'{input_dir}/{name}').iterrows():
+            models[name].append((row['accuracy'], row['time']))
     plt.close()
     plt.figure(figsize=(10, 10))
     index = 0
@@ -183,9 +190,8 @@ def visualise_accuracy_to_time(input_dir, output_path, min_accuracy=None, max_ti
         if max_time is not None:
             points = [p for p in points if p[1] <= max_time]
         accuracies, times = [i[0] for i in points], [i[1] for i in points]
-        color = colors[index] if index < len(colors) else 'black'
         index += 1
-        plt.scatter(times, accuracies, label=name, color=color, alpha=0.2)
+        plt.scatter(times, accuracies, label=name, alpha=0.2)
     plt.legend()
     plt.xlabel('time')
     plt.ylabel('accuracy')
@@ -341,6 +347,3 @@ def visualise_best_nets_params(input_dir, output_path, min_accuracy=0.95, min_di
         axes[index].set_title(param)
     plt.tight_layout()
     Util.save_plot(output_path)
-
-
-visualise_best_nets_params('../results/PCA', '../graphs/best nets params')

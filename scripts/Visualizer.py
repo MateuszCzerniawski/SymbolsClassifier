@@ -252,7 +252,7 @@ def visualise_params_popularity(input_dir, output_dir, top=20):
     models = {k: {'files': v} for k, v in models.items()}
     models['NET'] = {'files': models['NET']['files'], 'layer2': dict(), 'layer3': dict(), 'reg_val': dict(),
                      'reg': dict(), 'epochs': dict(), 'batch': dict(), 'learning_rate': dict(), 'optimiser': dict()}
-    all_dims = list(all_dims)
+    all_dims = sorted(list(all_dims))
     for model in models.keys():
         names = models[model]['files']
         missing = {'DT': missing_dt_values, 'ET': missing_et_values, 'RF': missing_rf_values}

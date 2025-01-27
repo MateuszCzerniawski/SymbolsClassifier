@@ -266,7 +266,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "__best-nets__":
     y = DataManipulator.load('../data/in_csv/y')
     y = categorise(y)
     data = Util.train_test_from(x, y)
-    tests = nets_from_file('../results/best_nets')
+    tests = nets_from_file('../results/best_candidates')
     for i in range(20, 61, 5):
         train, test, variance = Util.use_pca(data[0], data[2], i)
         compressed = (pd.DataFrame(train), data[1], pd.DataFrame(test), data[3])

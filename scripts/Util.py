@@ -63,8 +63,10 @@ def collect_best_nets(input_dir, output_path, min_accuracy=0.95, net_label='NET'
         data = data[data['accuracy'] >= min_accuracy].drop('loss', axis=1).drop('mae', axis=1)
         data['accuracy'] = data['accuracy'].apply(lambda x: format_float(x))
         best = pd.concat([best, data], ignore_index=True)
-    best.drop_duplicates()
+    subset = list(best.columns)
+    subset.remove('accuracy')
+    subset.remove('time')
+    best = best.drop_duplicates(subset=subset, keep='first')
     best = best.sort_values(by='accuracy', ascending=False)
     best.reset_index()
     best.to_csv(output_path, index=False)
-
